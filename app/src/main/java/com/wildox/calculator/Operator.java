@@ -5,8 +5,14 @@ package com.wildox.calculator;
  * operates +-/*%^
  */
 
-public abstract class Operator {
+public abstract class Operator implements Entity {
 
-    abstract String getOperator();
-    abstract double operateOn(double operand1, double operand2);
+    public abstract int getPriority();
+
+    public abstract double operateOn(double operand1, double operand2);
+
+    @Override
+    public int occupiedLength() {
+        return 1;
+    }
 }

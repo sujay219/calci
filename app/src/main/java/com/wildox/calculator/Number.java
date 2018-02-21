@@ -5,12 +5,12 @@ package com.wildox.calculator;
  *
  */
 
-public abstract class Number implements Entity {
+public class Number implements Entity {
 
-    private int digit = 0;
+    private double digit = 0;
     private String digitString;
 
-    public Number(int digit) {
+    public Number(double digit) {
         this.digit = digit;
         this.digitString = String.valueOf(digit);
     }
@@ -20,8 +20,9 @@ public abstract class Number implements Entity {
         return digitString.length();
     }
 
-    public int getDigit() {
-        return this.digit;
+    @Override
+    public String getValue() {
+        return digitString;
     }
 
     public double calculateWith(double anotherDigit, Operator operator) {

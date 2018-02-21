@@ -6,6 +6,12 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wildox.calculator.operators.DivideOperator;
+import com.wildox.calculator.operators.MinusOperator;
+import com.wildox.calculator.operators.ModulusOperator;
+import com.wildox.calculator.operators.MultiplyOperator;
+import com.wildox.calculator.operators.PlusOperator;
+import com.wildox.calculator.operators.PowerOperator;
 import com.wildox.loghere.LogHere;
 
 import java.util.ArrayList;
@@ -165,37 +171,35 @@ public class MainActivity extends AppCompatActivity {
                 length++;
             } else {
 
-                final int entitiesLen = length;
                 final String str = input.substring(lastIndex, lastIndex + length);
                 lastIndex += length;
                 length = 0;
 
-                singleEntities.add(new Entity() {
-                    @Override
-                    public String getValue() {
-                        return str;
-                    }
-
-                    @Override
-                    public int occupiedLength() {
-                        return entitiesLen;
-                    }
-                });
+                singleEntities.add(new Number(Double.valueOf(str)));
 
                 final String operator = input.substring(lastIndex, lastIndex + 1);
                 lastIndex++;
 
-                singleEntities.add(new Entity() {
-                    @Override
-                    public String getValue() {
-                        return operator;
-                    }
-
-                    @Override
-                    public int occupiedLength() {
-                        return entitiesLen;
-                    }
-                });
+                switch (operator) {
+                    case "^":
+                        singleEntities.add(new PowerOperator());
+                        break;
+                    case "%":
+                        singleEntities.add(new ModulusOperator());
+                        break;
+                    case "/":
+                        singleEntities.add(new DivideOperator());
+                        break;
+                    case "*":
+                        singleEntities.add(new MultiplyOperator());
+                        break;
+                    case "+":
+                        singleEntities.add(new PlusOperator());
+                        break;
+                    case "-":
+                        singleEntities.add(new MinusOperator());
+                        break;
+                }
             }
         }
 
