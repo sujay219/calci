@@ -146,35 +146,41 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Not a valid input", Toast.LENGTH_SHORT).show();
             return;
         }
-        Expression e = calculateAnswer(new Expression(input), 0);
-        if (e == null) {
+        String expression = calculateAnswer(input, 0);
+        if (expression == null) {
             Toast.makeText(this, "Calculation error", Toast.LENGTH_SHORT).show();
             return;
         }
-        String x = UtilHelper.getLongIfPossible(e.getValue());
+        LogHere.e("calcualted " + expression);
+        String x = UtilHelper.getLongIfPossible(Double.valueOf(expression));
 
         userInput.setText(x);
     }
 
-    private Expression calculateAnswer(Expression expression, int priorityWheel) {
+    private String calculateAnswer(String expression, int priorityWheel) {
 
-        LogHere.e("--> calculating: " + expression.getExpression());
-        if (isValidNumeric(expression.getExpression())) {
-            return new Expression(Double.valueOf(expression.getExpression()), true);
+        expression = expression.trim();
+        LogHere.e("--> processing: " + expression);
+
+        if (priorityWheel >= priorities.length) {
+            LogHere.e("priorities overloaded this will the final result: " + expression);
+            return expression;
+        }
+
+        if (isValidNumeric(expression)) {
+            return expression;
         }
 
         try {
-            return new Expression(Double.valueOf(expression.getExpression()), true);
+            // have we reached the expression
+            Double.valueOf(expression);
+            return expression;
         } catch (NumberFormatException e) {
             // just go on
-            LogHere.e("not a negative number " + expression.getExpression());
-        }
-        if (priorityWheel >= priorities.length) {
-            LogHere.e("priorities overloaded: " + expression.getExpression());
-            return new Expression(Double.valueOf(expression.getExpression()), true);
+            LogHere.e("NON: " + expression);
         }
 
-        String actualExpression = expression.getExpression();
+        String actualExpression = expression;
 
         char operatorNow = isAvailableInPriority(actualExpression, priorities[priorityWheel]);
         // error: calculate next
@@ -186,19 +192,19 @@ public class MainActivity extends AppCompatActivity {
         }
 
         String stringExpressions[] = new String[2];
-        stringExpressions[0] = expression.getExpression().substring(0, actualExpression.indexOf(operatorNow));
-        stringExpressions[1] = expression.getExpression().substring(actualExpression.indexOf(operatorNow) + 1);
+        stringExpressions[0] = expression.substring(0, actualExpression.indexOf(operatorNow));
+        stringExpressions[1] = expression.substring(actualExpression.indexOf(operatorNow) + 1);
 
         LogHere.e("string expressions: " + stringExpressions[0] + " . " + operatorNow + " . " + stringExpressions[1]);
         if (stringExpressions.length == 1) {
             return calculateAnswer(expression, priorityWheel + 1);
         } else if (stringExpressions[0].length() == 0) {
-            return calculateAnswer(new Expression(stringExpressions[1]), priorityWheel);
+            return calculateAnswer(stringExpressions[1], priorityWheel);
         } else if (stringExpressions[1].length() == 0) {
-            return calculateAnswer(new Expression(stringExpressions[0]), priorityWheel);
+            return calculateAnswer(stringExpressions[0], priorityWheel);
         } else {
             // now we can calculate the expression based on priorities.
-            double valueOf = 0;
+            String valueOf = "";
 
             double firstOperand = UtilHelper.fetchLast(stringExpressions[0]);
             stringExpressions[0] = UtilHelper.stripLast(stringExpressions[0]);
@@ -209,15 +215,13 @@ public class MainActivity extends AppCompatActivity {
             LogHere.e("operands : " + firstOperand + " " + operatorNow + " " + secondOperand);
             LogHere.e("after Strip: " + stringExpressions[0] + " & " + stringExpressions[1]);
             double temp;
-            Expression e = null;
             String processedExp;
             switch (operatorNow) {
                 case '^':
 
-                    temp = Math.pow(firstOperand, secondOperand);
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel);
+                    temp = (int) (Math.pow(firstOperand, secondOperand));
+                    valueOf = calculateAnswer(stringExpressions[0] + temp +
+                            stringExpressions[1], priorityWheel);
                     break;
                 case '%':
 
@@ -226,8 +230,7 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     }
                     temp = firstOperand % secondOperand;
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp + stringExpressions[1]),
+                    valueOf = calculateAnswer(stringExpressions[0] + temp + stringExpressions[1],
                             priorityWheel);
                     break;
                 case '/':
@@ -241,8 +244,8 @@ public class MainActivity extends AppCompatActivity {
                     if (stringExpressions[0].equals("-")) {
                         stringExpressions[0] = "";
                     }
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel);
+                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
+                            stringExpressions[1], priorityWheel);
                     break;
                 case '*':
 
@@ -252,30 +255,25 @@ public class MainActivity extends AppCompatActivity {
                     if (stringExpressions[0].equals("-")) {
                         stringExpressions[0] = "";
                     }
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel);
+                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
+                            stringExpressions[1], priorityWheel);
                     break;
                 case '+':
 
                     temp = firstOperand + secondOperand;
                     processedExp = UtilHelper.getLongIfPossible(temp);
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel);
+                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
+                            stringExpressions[1], priorityWheel);
                     break;
                 case '-':
 
                     temp = firstOperand - secondOperand;
                     processedExp = UtilHelper.getLongIfPossible(temp);
-                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel);
+                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
+                            stringExpressions[1], priorityWheel);
                     break;
             }
-            if (e == null) {
-                return null;
-            } else {
-                valueOf = e.getValue();
-            }
-            return new Expression(valueOf, true);
+            return valueOf;
         }
     }
 
@@ -407,45 +405,45 @@ public class MainActivity extends AppCompatActivity {
         return (ch == '/' || ch == '*' || ch == '+' || ch == '-' || ch == '^' || ch == '%');
     }
 
-    public boolean isValidNumeric(String str) {
+    public boolean isValidNumeric(String expression) {
 
-        if (str.length() == 0) {
+        if (expression.length() == 0) {
             LogHere.e("length zero");
             return false;
         }
 
-        if (str.length() == 1 && !isValidFirstChar(str.charAt(0))) {
+        if (expression.length() == 1 && !isValidFirstChar(expression.charAt(0))) {
             LogHere.e("return from zero..");
             return false;
         }
 
         // If the 1st char is not '+', '-', '.' or digit
-        if (str.charAt(0) != '+' || str.charAt(0) != '-' ||
-                !Character.isDigit(str.charAt(0)) ||
-                str.charAt(0) != '.')
+        if (expression.charAt(0) != '+' || expression.charAt(0) != '-' ||
+                !Character.isDigit(expression.charAt(0)) ||
+                expression.charAt(0) != '.')
             return false;
 
-        for (int i = 1; i < str.length(); i++) {
+        for (int i = 1; i < expression.length(); i++) {
             // If any of the char does not belong to {digit, +, -, ., e}
-            LogHere.e("" + str.charAt(i));
+            LogHere.e("" + expression.charAt(i));
 
-            if (Character.isDigit(str.charAt(i))) {
-                LogHere.e("" + str.charAt(i));
+            if (Character.isDigit(expression.charAt(i))) {
+                LogHere.e("" + expression.charAt(i));
                 continue;
             }
 
-            if (str.charAt(i) == '/' || str.charAt(i) == '*' ||
-                    str.charAt(i) == '+' || str.charAt(i) == '-')
+            if (expression.charAt(i) == '/' || expression.charAt(i) == '*' ||
+                    expression.charAt(i) == '+' || expression.charAt(i) == '-')
                 return false;
 
-            if (str.charAt(i) == '.') {
+            if (expression.charAt(i) == '.') {
 
                 // If '.' is the last character.
-                if (i + 1 >= str.length())
+                if (i + 1 >= expression.length())
                     return false;
 
                 // if '.' is not followed by a digit.
-                if (!Character.isDigit(str.charAt(i + 1)))
+                if (!Character.isDigit(expression.charAt(i + 1)))
                     return false;
             }
         }
