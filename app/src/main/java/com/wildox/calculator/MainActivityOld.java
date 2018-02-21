@@ -8,13 +8,11 @@ import android.widget.Toast;
 
 import com.wildox.loghere.LogHere;
 
-import java.util.ArrayList;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivityOld extends AppCompatActivity {
 
     @BindView(R.id.user_input)
     TextView userInput;
@@ -148,84 +146,15 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Not a valid input", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        // break this down to entities.
-        ArrayList<Entity> singleEntities = new ArrayList<>();
-
-        int lastIndex = 0;
-        int length = 0;
-        for (int i = 0; i < input.length(); i++) {
-
-            // LogHere.e(i + " " + input.charAt(i) + " len " + length + " " + lastIndex);
-            // If it belongs to number.. else increment for operator!
-            if ((i == 0 && isValidFirstChar(input.charAt(i))) ||
-                    (length == 0 && isValidFirstChar(input.charAt(i))) ||
-                    (Character.isDigit(input.charAt(i)) || input.charAt(i) == '.')) {
-
-                length++;
-            } else {
-
-                final int entitiesLen = length;
-                final String str = input.substring(lastIndex, lastIndex + length);
-                lastIndex += length;
-                length = 0;
-
-                singleEntities.add(new Entity() {
-                    @Override
-                    public String getValue() {
-                        return str;
-                    }
-
-                    @Override
-                    public int occupiedLength() {
-                        return entitiesLen;
-                    }
-                });
-
-                final String operator = input.substring(lastIndex, lastIndex + 1);
-                lastIndex++;
-
-                singleEntities.add(new Entity() {
-                    @Override
-                    public String getValue() {
-                        return operator;
-                    }
-
-                    @Override
-                    public int occupiedLength() {
-                        return entitiesLen;
-                    }
-                });
-            }
-        }
-
-        final int len = length;
-        final String s = input.substring(lastIndex, lastIndex + length);
-        singleEntities.add(new Entity() {
-            @Override
-            public String getValue() {
-                return s;
-            }
-
-            @Override
-            public int occupiedLength() {
-                return len;
-            }
-        });
-
-        for (int k = 0; k < singleEntities.size(); k++) {
-            LogHere.e("--> " + singleEntities.get(k).getValue());
-        }
-        /*
-            String expression = calculateAnswer(input, 0);
+        String expression = calculateAnswer(input, 0);
         if (expression == null) {
             Toast.makeText(this, "Calculation error", Toast.LENGTH_SHORT).show();
             return;
         }
         LogHere.e("calcualted " + expression);
         String x = UtilHelper.getLongIfPossible(Double.valueOf(expression));
+
         userInput.setText(x);
-        */
     }
 
     private String calculateAnswer(String expression, int priorityWheel) {
@@ -512,11 +441,8 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    boolean isValidNumber(char ch) {
-        return (Character.isDigit(ch) || ch == '+' || ch == '-');
-    }
-
     boolean isValidFirstChar(char ch) {
+
         return (Character.isDigit(ch) || ch == '+' || ch == '-');
     }
 }
