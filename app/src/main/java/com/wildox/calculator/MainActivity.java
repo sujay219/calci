@@ -151,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, "Calculation error", Toast.LENGTH_SHORT).show();
             return;
         }
-        LogHere.e("calcualted " + e.getValue());
         String x = UtilHelper.getLongIfPossible(e.getValue());
 
         userInput.setText(x);
@@ -159,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private Expression calculateAnswer(Expression expression, int priorityWheel) {
 
-        LogHere.e("--> processing: " + expression.getExpression());
+        LogHere.e("--> calculating: " + expression.getExpression());
         if (isValidNumeric(expression.getExpression())) {
             return new Expression(Double.valueOf(expression.getExpression()), true);
         }
@@ -210,13 +209,15 @@ public class MainActivity extends AppCompatActivity {
             LogHere.e("operands : " + firstOperand + " " + operatorNow + " " + secondOperand);
             LogHere.e("after Strip: " + stringExpressions[0] + " & " + stringExpressions[1]);
             double temp;
+            Expression e = null;
             String processedExp;
             switch (operatorNow) {
                 case '^':
 
-                    temp = (int) (Math.pow(firstOperand, secondOperand));
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + temp +
-                            stringExpressions[1]), priorityWheel).getValue();
+                    temp = Math.pow(firstOperand, secondOperand);
+                    processedExp = UtilHelper.getLongIfPossible(temp);
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
+                            stringExpressions[1]), priorityWheel);
                     break;
                 case '%':
 
@@ -225,8 +226,9 @@ public class MainActivity extends AppCompatActivity {
                         return null;
                     }
                     temp = firstOperand % secondOperand;
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + temp + stringExpressions[1]),
-                            priorityWheel).getValue();
+                    processedExp = UtilHelper.getLongIfPossible(temp);
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp + stringExpressions[1]),
+                            priorityWheel);
                     break;
                 case '/':
 
@@ -239,8 +241,8 @@ public class MainActivity extends AppCompatActivity {
                     if (stringExpressions[0].equals("-")) {
                         stringExpressions[0] = "";
                     }
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + processedExp+
-                            stringExpressions[1]), priorityWheel).getValue();
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
+                            stringExpressions[1]), priorityWheel);
                     break;
                 case '*':
 
@@ -250,23 +252,28 @@ public class MainActivity extends AppCompatActivity {
                     if (stringExpressions[0].equals("-")) {
                         stringExpressions[0] = "";
                     }
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel).getValue();
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
+                            stringExpressions[1]), priorityWheel);
                     break;
                 case '+':
 
                     temp = firstOperand + secondOperand;
                     processedExp = UtilHelper.getLongIfPossible(temp);
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel).getValue();
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
+                            stringExpressions[1]), priorityWheel);
                     break;
                 case '-':
 
                     temp = firstOperand - secondOperand;
                     processedExp = UtilHelper.getLongIfPossible(temp);
-                    valueOf = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
-                            stringExpressions[1]), priorityWheel).getValue();
+                    e = calculateAnswer(new Expression(stringExpressions[0] + processedExp +
+                            stringExpressions[1]), priorityWheel);
                     break;
+            }
+            if (e == null) {
+                return null;
+            } else {
+                valueOf = e.getValue();
             }
             return new Expression(valueOf, true);
         }
