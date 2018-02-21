@@ -1,13 +1,14 @@
 package com.wildox.calculator.operators;
 
 import com.wildox.calculator.Operator;
+import com.wildox.calculator.ValidFirstChar;
 
 /**
  * Created by Sujay on 21/02/18.
  * Plus is the
  */
 
-public class MinusOperator extends Operator {
+public class MinusOperator extends Operator implements ValidFirstChar {
 
     @Override
     public int getPriority() {

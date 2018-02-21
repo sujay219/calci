@@ -5,7 +5,7 @@ package com.wildox.calculator;
  * contians number operator and numbers
  */
 
-public interface Entity {
+public interface Entities {
     String getValue();
     int occupiedLength();
 }

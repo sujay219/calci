@@ -5,12 +5,12 @@ package com.wildox.calculator;
  *
  */
 
-public class Number implements Entity {
+public class NumberModel implements Entities, ValidFirstChar {
 
     private double digit = 0;
     private String digitString;
 
-    public Number(double digit) {
+    public NumberModel(double digit) {
         this.digit = digit;
         this.digitString = String.valueOf(digit);
     }

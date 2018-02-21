@@ -156,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // break this down to entities.
-        ArrayList<Entity> singleEntities = new ArrayList<>();
+        ArrayList<Entities> singleEntities = new ArrayList<>();
 
         int lastIndex = 0;
         int length = 0;
@@ -175,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 lastIndex += length;
                 length = 0;
 
-                singleEntities.add(new Number(Double.valueOf(str)));
+                singleEntities.add(new NumberModel(Double.valueOf(str)));
 
                 final String operator = input.substring(lastIndex, lastIndex + 1);
                 lastIndex++;
@@ -203,25 +203,15 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        final int len = length;
         final String s = input.substring(lastIndex, lastIndex + length);
-        singleEntities.add(new Entity() {
-            @Override
-            public String getValue() {
-                return s;
-            }
-
-            @Override
-            public int occupiedLength() {
-                return len;
-            }
-        });
+        singleEntities.add(new NumberModel(Double.valueOf(s)));
 
         for (int k = 0; k < singleEntities.size(); k++) {
             LogHere.e("--> " + singleEntities.get(k).getValue());
         }
-        /*
-            String expression = calculateAnswer(input, 0);
+
+        String expression = calculateAnswer(singleEntities);
+
         if (expression == null) {
             Toast.makeText(this, "Calculation error", Toast.LENGTH_SHORT).show();
             return;
@@ -229,129 +219,52 @@ public class MainActivity extends AppCompatActivity {
         LogHere.e("calcualted " + expression);
         String x = UtilHelper.getLongIfPossible(Double.valueOf(expression));
         userInput.setText(x);
-        */
     }
 
-    private String calculateAnswer(String expression, int priorityWheel) {
+    private String calculateAnswer(ArrayList<Entities> entities) {
 
-        expression = expression.trim();
-        LogHere.e("--> processing: " + expression);
+        LogHere.e("--> processing: " + entities.toString());
 
-        if (priorityWheel >= priorities.length) {
-            LogHere.e("priorities overloaded this will the final result: " + expression);
-            return expression;
-        }
-
-        if (isValidNumeric(expression)) {
-            return expression;
-        }
-
-        try {
-            // have we reached the expression
-            Double.valueOf(expression);
-            return expression;
-        } catch (NumberFormatException e) {
-            // just go on
-            LogHere.e("NON: " + expression);
-        }
-
-        String actualExpression = expression;
-
-        char operatorNow = isAvailableInPriority(actualExpression, priorities[priorityWheel]);
-        // error: calculate next
-        if (operatorNow == 'N') {
-            LogHere.e("not found in priority " + priorities[priorityWheel] + " checking others.");
-            return calculateAnswer(expression, priorityWheel + 1);
-        } else {
-            LogHere.e("found operator " + operatorNow);
-        }
-
-        String stringExpressions[] = new String[2];
-        stringExpressions[0] = expression.substring(0, actualExpression.indexOf(operatorNow));
-        stringExpressions[1] = expression.substring(actualExpression.indexOf(operatorNow) + 1);
-
-        LogHere.e("string expressions: " + stringExpressions[0] + " . " + operatorNow + " . " + stringExpressions[1]);
-        if (stringExpressions.length == 1) {
-            return calculateAnswer(expression, priorityWheel + 1);
-        } else if (stringExpressions[0].length() == 0) {
-            return calculateAnswer(stringExpressions[1], priorityWheel);
-        } else if (stringExpressions[1].length() == 0) {
-            return calculateAnswer(stringExpressions[0], priorityWheel);
-        } else {
-            // now we can calculate the expression based on priorities.
-            String valueOf = "";
-
-            double firstOperand = UtilHelper.fetchLast(stringExpressions[0]);
-            stringExpressions[0] = UtilHelper.stripLast(stringExpressions[0]);
-
-            double secondOperand = UtilHelper.fetchFirst(stringExpressions[1]);
-            stringExpressions[1] = UtilHelper.stripFirst(stringExpressions[1]);
-
-            LogHere.e("operands : " + firstOperand + " " + operatorNow + " " + secondOperand);
-            LogHere.e("after Strip: " + stringExpressions[0] + " & " + stringExpressions[1]);
-            double temp;
-            String processedExp;
-            switch (operatorNow) {
-                case '^':
-
-                    temp = (int) (Math.pow(firstOperand, secondOperand));
-                    valueOf = calculateAnswer(stringExpressions[0] + temp +
-                            stringExpressions[1], priorityWheel);
-                    break;
-                case '%':
-
-                    if (secondOperand == 0) {
-                        Toast.makeText(this, "Division by zero error", Toast.LENGTH_SHORT).show();
-                        return null;
-                    }
-                    temp = firstOperand % secondOperand;
-                    valueOf = calculateAnswer(stringExpressions[0] + temp + stringExpressions[1],
-                            priorityWheel);
-                    break;
-                case '/':
-
-                    if (secondOperand == 0) {
-                        Toast.makeText(this, "Division by zero error", Toast.LENGTH_SHORT).show();
-                        return null;
-                    }
-                    temp = firstOperand / secondOperand;
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    if (stringExpressions[0].equals("-")) {
-                        stringExpressions[0] = "";
-                    }
-                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
-                            stringExpressions[1], priorityWheel);
-                    break;
-                case '*':
-
-                    temp = firstOperand * secondOperand;
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    // for the negative
-                    if (stringExpressions[0].equals("-")) {
-                        stringExpressions[0] = "";
-                    }
-                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
-                            stringExpressions[1], priorityWheel);
-                    break;
-                case '+':
-
-                    temp = firstOperand + secondOperand;
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
-                            stringExpressions[1], priorityWheel);
-                    break;
-                case '-':
-
-                    temp = firstOperand - secondOperand;
-                    processedExp = UtilHelper.getLongIfPossible(temp);
-                    valueOf = calculateAnswer(stringExpressions[0] + processedExp +
-                            stringExpressions[1], priorityWheel);
-                    break;
+        if (entities.size() == 1) {
+            if (entities.get(0) instanceof ValidFirstChar) {
+                LogHere.e("returning proper value");
+                return entities.get(0).getValue();
+            } else {
+                return null;
             }
-            return valueOf;
         }
-    }
 
+        // check for priority expressions
+        for (int i = 1; i < entities.size() - 1; i++) {
+
+            if (entities.get(i) instanceof Operator) {
+
+                Operator operator = (Operator) entities.get(i);
+                NumberModel first = (NumberModel) entities.get(i - 1);
+                NumberModel second = (NumberModel) entities.get(i + 1);
+
+                double result = 0;
+                try {
+                    result = operator.operateOn(Double.valueOf(first.getValue()),
+                            Double.valueOf(second.getValue()));
+
+                    entities.remove(0);
+                    entities.remove(0);
+                    entities.remove(0);
+                    entities.add(0, new NumberModel(result));
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+
+                for (int k = 0; k < entities.size(); k++) {
+                    LogHere.e("----> " + entities.get(k).getValue());
+                }
+                break;
+            }
+        }
+
+        return calculateAnswer(entities);
+    }
 
     char isAvailableInPriority(String wholeTerm, String searchThis) {
 
@@ -430,7 +343,8 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
                 // if next is also an operator.
-                if (isOperator(str.charAt(i + 1))) {
+                if (isOperator(str.charAt(i + 1)) &&
+                        !isPlusMinus(str.charAt(i + 1))) {
                     return false;
                 }
             }
@@ -467,6 +381,10 @@ public class MainActivity extends AppCompatActivity {
 
     boolean isOperator(char ch) {
         return (ch == '/' || ch == '*' || ch == '+' || ch == '-' || ch == '^' || ch == '%');
+    }
+
+    boolean isPlusMinus(char ch) {
+        return (ch == '+' || ch == '-');
     }
 
     public boolean isValidNumeric(String expression) {

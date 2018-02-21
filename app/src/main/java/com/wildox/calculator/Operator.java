@@ -5,7 +5,7 @@ package com.wildox.calculator;
  * operates +-/*%^
  */
 
-public abstract class Operator implements Entity {
+public abstract class Operator implements Entities {
 
     public abstract int getPriority();
 
