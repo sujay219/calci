@@ -45,7 +45,7 @@ public class UtilHelper {
     public static String stripFirst(String str) {
 
         int len = 0;
-        while (len < str.length() && Character.isDigit(str.charAt(len))) {
+        while (len < str.length() && (Character.isDigit(str.charAt(len)) || str.charAt(len) == '.')) {
             len++;
         }
         return str.substring(len);
